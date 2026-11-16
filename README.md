@@ -10,6 +10,8 @@ This project combines the supplied updated Next.js frontend, FastAPI backend, an
 
 **Deploy:** [Vercel frontend, persistent backend, database, Google sign-in, and email](docs/DEPLOYMENT.md)
 
+**Azure VM alternative:** [Run the full stack on one Ubuntu VM with HTTPS](docs/AZURE-VM-DEPLOYMENT.md)
+
 ## Run locally on Windows
 
 Requirements: Node.js 20.9+ (22 LTS recommended), Python 3.11+, and internet access for the first dependency installation. PostgreSQL and Docker are optional for local development.

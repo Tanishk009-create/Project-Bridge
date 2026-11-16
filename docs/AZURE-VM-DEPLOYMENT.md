@@ -75,6 +75,20 @@ sudo docker compose -f compose.azure.yml logs --since=10m api
 
 An `Account verify link delivery: sent` entry means the SMTP relay accepted the email; check the sender's Sent folder and the recipient's Spam folder. `SMTPAuthenticationError` means the Google App Password was rejected. `TimeoutError` or `gaierror` suggests a network or DNS problem. `rate-limited` means the app skipped a resend within its two-minute cooldown. Log messages intentionally omit addresses, links, tokens, and passwords. If the Gmail account password was changed after making an App Password, generate a new App Password and update the VM's `.env`.
 
+The reset and resend endpoints intentionally return a generic `200` response to avoid exposing whether someone has an account. A `200` alone does not prove an email was sent. If no delivery entry appears, confirm the VM has rebuilt the latest code, then check the runtime configuration **without printing its values**:
+
+```bash
+sudo docker compose -f compose.azure.yml exec -T api python -c 'from app.core import settings; print("mode:", settings.mail_mode, "host:", settings.smtp_host, "port:", settings.smtp_port, "username set:", bool(settings.smtp_username), "app password set:", bool(settings.smtp_password.get_secret_value()))'
+```
+
+To isolate the SMTP connection from the account flow, send a plain test message to the configured sending mailbox. This command reads the password inside the container and does not print it:
+
+```bash
+sudo docker compose -f compose.azure.yml exec -T api python -c 'from app.core import settings; from app.services.mail import send_mail; print(send_mail(settings.smtp_username, "Bridge SMTP check", "Test message from the Azure VM"))'
+```
+
+If that fails, use the exception type to diagnose SMTP authentication or connectivity. If it prints `sent` but the message never reaches the sending mailbox, check Gmail's Sent and Spam folders. Wait two minutes between verification-link requests because a failed attempt can still trigger the resend cooldown.
+
 Google OAuth accounts use Google's verified email claim and do **not** receive a separate Bridge verification email. If the site appears to request one after Google sign-in, capture the exact on-screen message and check that the VM has pulled the latest `main` branch and rebuilt the containers. Never paste `.env` or a verification URL into a support message.
 
 ## Source documentation

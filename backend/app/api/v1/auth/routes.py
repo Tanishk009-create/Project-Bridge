@@ -33,7 +33,8 @@ from app.models import RefreshToken, User
 from app.schemas import LoginRequest, LoginResponse, SignupRequest, SignupResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-log = logging.getLogger(__name__)
+# Uvicorn's application logger is configured to show INFO in container logs.
+log = logging.getLogger("uvicorn.error")
 
 # Verified against when the user doesn't exist, so a failed login takes as long
 # whether or not the account exists (prevents user enumeration by timing).
@@ -164,8 +165,10 @@ async def login(
 @router.post("/resend-verification")
 async def resend_verification(payload: EmailRequest, users: UserRepoDep, db: SessionDep):
     user = await users.get_by_email(payload.email.lower())
-    if user and user.email_verified_at is None and settings.mail_mode != "disabled":
+    if user and not user.google_subject and user.email_verified_at is None and settings.mail_mode != "disabled":
         await send_account_link(db, user, "verify")
+    else:
+        log.info("Verification resend skipped: no unverified password account matched")
     return {"message": "If this address has an unverified account, check its inbox and Spam folder. If no link arrives, ask the site administrator to check email delivery."}
 
 
@@ -187,6 +190,8 @@ async def request_password_reset(payload: EmailRequest, users: UserRepoDep, db: 
     user = await users.get_by_email(payload.email.lower())
     if user and not user.google_subject and settings.mail_mode != "disabled":
         await send_account_link(db, user, "reset")
+    else:
+        log.info("Password reset link skipped: no eligible password account matched")
     return {"message": "If this account can reset its password, a link has been sent or saved to the local outbox."}
 
 

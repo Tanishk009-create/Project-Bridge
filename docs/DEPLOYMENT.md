@@ -7,7 +7,7 @@ These instructions use Render as an example backend host. Do not commit `.env`, 
 ## 1. Create the database and backend
 
 1. Create a managed PostgreSQL database. If using Render, place the database and web service in the same region and use its **internal** connection details for the web service. A free Render PostgreSQL database expires after 30 days, so use durable storage before storing real user data.
-2. Create a Render **Web Service** from this repository with Root Directory `backend`, Language `Python`, Build Command `pip install -r requirements.txt`, and Start Command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Select compute that stays running if scheduled reminders/previews must work.
+2. Create a Render **Web Service** from this repository with Root Directory `backend`, Language `Python`, Build Command `pip install -r requirements.txt`, and Start Command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Select a paid, always-running instance if scheduled reminders/previews and Gmail SMTP must work. Render's free web services sleep when idle and block outbound SMTP ports 25, 465, and 587.
 3. Set these backend environment variables in the host dashboard. Use new, private random values for secrets:
 
    | Variable | Value |
@@ -63,8 +63,10 @@ SMTP_FROM=<sending Gmail address>
 
 Keep these values out of GitHub and Vercel's frontend environment. `PUBLIC_URL` must point to the deployed frontend so email links open the right site. After changing host environment variables, redeploy the backend.
 
+This SMTP configuration needs a backend host that permits outbound port 587; **Render's free web service does not**. An HTTP-based transactional email provider is another option, but the current `send_mail` implementation would need to be changed to use its API.
+
 ## 5. Release checks
 
 When the team is ready to test: check database health, email signup/verification, password reset, Google sign-in, a saved conversation, Gemini response, and a scheduled reminder/reflection. Do not invite people to write sensitive real-life material until the prototype's AI data handling, safety behavior, and privacy language have been reviewed.
 
-Free Render web services sleep when idle; background scheduling pauses during sleep. Free Render PostgreSQL databases expire after 30 days. Choose a persistent service and database before relying on reminders or saved user data.
+Free Render web services sleep when idle, blocking background scheduling, and block SMTP delivery. Free Render PostgreSQL databases expire after 30 days. Choose a persistent service and database before relying on reminders, recovery email, or saved user data.

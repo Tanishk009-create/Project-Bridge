@@ -1,0 +1,13 @@
+{
+  "name": "project-bridge-integrated",
+  "private": true,
+  "version": "0.2.0",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "test": "node scripts/test.mjs"
+  },
+  "engines": { "node": ">=20.9" }
+}

@@ -1,0 +1,45 @@
+# Import every model here so `from app.models import X` works and
+# Base.metadata sees all tables (needed for Alembic autogenerate).
+from app.models.base import Base
+from app.models.context_edge import ContextEdge
+from app.models.context_node import ContextNode
+from app.models.conversation import Conversation
+from app.models.hypothesis import Hypothesis
+from app.models.hypothesis_evidence import HypothesisEvidence
+from app.models.message import Message
+from app.models.node_source import NodeSource
+from app.models.notification import Notification
+from app.models.refresh_token import RefreshToken
+from app.models.reflection import Reflection
+from app.models.user import Address, User
+from app.models.user_preferences import DEFAULT_PREFERENCES, UserPreferences
+from app.models.workspace import Capture, PassportItem
+from app.models.ai_turn import AITurn
+from app.models.review import ReflectionSource, Reminder
+from app.models.account_token import AccountToken
+from app.models.preview_schedule import PreviewSchedule
+
+__all__ = [
+    "Address",
+    "AccountToken",
+    "AITurn",
+    "ReflectionSource",
+    "Reminder",
+    "Base",
+    "Capture",
+    "PassportItem",
+    "PreviewSchedule",
+    "ContextEdge",
+    "ContextNode",
+    "Conversation",
+    "DEFAULT_PREFERENCES",
+    "Hypothesis",
+    "HypothesisEvidence",
+    "Message",
+    "NodeSource",
+    "Notification",
+    "RefreshToken",
+    "Reflection",
+    "User",
+    "UserPreferences",
+]

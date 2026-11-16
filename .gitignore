@@ -1,0 +1,16 @@
+**/node_modules/
+**/.next*/
+**/.npm-cache/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.test-tmp/
+**/*.pyc
+**/*.tsbuildinfo
+**/*.db
+**/*.db-*
+**/.env
+**/.env.local
+**/.env.test
+.tmp/
+logs/

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+import logging
 import secrets
 import smtplib
 import uuid
@@ -32,6 +33,7 @@ from app.models import RefreshToken, User
 from app.schemas import LoginRequest, LoginResponse, SignupRequest, SignupResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+log = logging.getLogger(__name__)
 
 # Verified against when the user doesn't exist, so a failed login takes as long
 # whether or not the account exists (prevents user enumeration by timing).
@@ -61,10 +63,17 @@ class ResetPasswordRequest(TokenRequest):
 async def send_account_link(db, user, purpose: str) -> str:
     message, issued = await issue_link(db, user, purpose)
     if not issued or not message:
+        log.info("Account %s link skipped during resend cooldown", purpose)
         return "rate-limited"
     try:
-        return await run_in_threadpool(send_mail, *message)
-    except (OSError, RuntimeError, TimeoutError, smtplib.SMTPException):
+        delivery = await run_in_threadpool(send_mail, *message)
+        log.info("Account %s link delivery: %s", purpose, delivery)
+        return delivery
+    except smtplib.SMTPResponseException as exc:
+        log.warning("Account %s link delivery failed: %s (SMTP %s)", purpose, type(exc).__name__, exc.smtp_code)
+        return "unavailable"
+    except (OSError, RuntimeError, TimeoutError, smtplib.SMTPException) as exc:
+        log.warning("Account %s link delivery failed: %s", purpose, type(exc).__name__)
         return "unavailable"
 
 @router.post("/google", response_model=LoginResponse)
@@ -157,7 +166,7 @@ async def resend_verification(payload: EmailRequest, users: UserRepoDep, db: Ses
     user = await users.get_by_email(payload.email.lower())
     if user and user.email_verified_at is None and settings.mail_mode != "disabled":
         await send_account_link(db, user, "verify")
-    return {"message": "If this account needs verification, a link has been sent or saved to the local outbox."}
+    return {"message": "If this address has an unverified account, check its inbox and Spam folder. If no link arrives, ask the site administrator to check email delivery."}
 
 
 @router.post("/verify-email")

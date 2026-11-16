@@ -65,6 +65,18 @@ sudo docker compose -f compose.azure.yml exec -T db pg_dump -U bridge bridge | g
 
 VM disk snapshots are useful as an additional recovery option. Keep the OS and Docker packages updated, and monitor VM disk, memory, container logs, mail delivery, and domain renewal. Do not use `npm run dev` or the local HTTP Compose file on the public VM.
 
+## If verification or recovery mail does not arrive
+
+After pressing **Resend verification** (or requesting a password reset), check the API logs without displaying `.env`:
+
+```bash
+sudo docker compose -f compose.azure.yml logs --since=10m api
+```
+
+An `Account verify link delivery: sent` entry means the SMTP relay accepted the email; check the sender's Sent folder and the recipient's Spam folder. `SMTPAuthenticationError` means the Google App Password was rejected. `TimeoutError` or `gaierror` suggests a network or DNS problem. `rate-limited` means the app skipped a resend within its two-minute cooldown. Log messages intentionally omit addresses, links, tokens, and passwords. If the Gmail account password was changed after making an App Password, generate a new App Password and update the VM's `.env`.
+
+Google OAuth accounts use Google's verified email claim and do **not** receive a separate Bridge verification email. If the site appears to request one after Google sign-in, capture the exact on-screen message and check that the VM has pulled the latest `main` branch and rebuilt the containers. Never paste `.env` or a verification URL into a support message.
+
 ## Source documentation
 
 - [Azure Linux VM quickstart](https://learn.microsoft.com/azure/virtual-machines/linux/quick-create-portal)

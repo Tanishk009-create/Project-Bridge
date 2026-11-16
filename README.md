@@ -146,7 +146,7 @@ bridge-integrated/
 
 - **Cannot reach server:** use the root `npm run dev`, check its API errors, and open `/api/v1/health/db` on the API port. An unstarted API no longer results in a pretend login.
 - **Google unavailable:** configure both environment files and restart. Until then use Sign Up and password login.
-- **Forgot password:** email recovery is explicitly unavailable; implement signed, expiring reset tokens and email delivery before onboarding external users.
+- **Verification or recovery mail missing:** the backend issues one-time links, but delivery depends on SMTP configuration. Check the API logs and the [Azure VM mail troubleshooting steps](docs/AZURE-VM-DEPLOYMENT.md#if-verification-or-recovery-mail-does-not-arrive); local file mode writes links to `backend/.tmp/mail-outbox`.
 - **Port in use:** stop the old server or choose `WEB_PORT`/`API_PORT` as above.
 - **Dependency install fails:** check Node/Python versions and network/proxy access; use the checked-in frontend lockfile with `npm ci`.
 - **Existing local SQLite schema differs:** preserve its database file and migrate/export it deliberately. Setup will not erase it or rewrite existing tables.

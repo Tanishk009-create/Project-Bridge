@@ -122,7 +122,7 @@ export function AuthScreen() {
     window.requestAnimationFrame(() => emailInputRef.current?.focus());
   }
 
-  async function resendVerification(){if(!email.trim()) {setError("Enter your email address first.");return;}setBusy(true);setError("");try{const result=await apiRequest<{message:string}>("/auth/resend-verification",{method:"POST",body:JSON.stringify({email:email.trim()})});setNotice(result.message+" For local development, check backend/.tmp/mail-outbox.");}catch(e){setError(errorMessage(e));}finally{setBusy(false);}}
+  async function resendVerification(){if(!email.trim()) {setError("Enter your email address first.");return;}setBusy(true);setError("");try{const result=await apiRequest<{message:string}>("/auth/resend-verification",{method:"POST",body:JSON.stringify({email:email.trim()})});setNotice(result.message);}catch(e){setError(errorMessage(e));}finally{setBusy(false);}}
   async function requestRecovery(event:FormEvent){event.preventDefault();setBusy(true);setRecoveryNotice("");try{const result=await apiRequest<{message:string}>("/auth/request-password-reset",{method:"POST",body:JSON.stringify({email:recoveryEmail.trim()})});setRecoveryNotice(result.message);}catch(e){setRecoveryNotice(e instanceof ApiError && e.status===404 ? "Password reset is unavailable in the running backend. Restart the backend to load the updated account routes, then try again." : errorMessage(e));}finally{setBusy(false);}}
 
   return (
